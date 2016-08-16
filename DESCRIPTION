@@ -1,0 +1,31 @@
+Package: claut
+Type: Package
+Title: Functions from the University of Toronto Climate Lab
+Version: 0.1.0
+Date: 2016-08-16
+Authors@R: c(person(given = c("Conor", "I."), family = "Andeson",
+           role = c("aut","cre"), email = "conor.anderson@mail.utoronto.ca"),
+           person(given = c("William", "A."), family = "Gough", role = "ths",
+           email = "gough@utsc.utoronto.ca"))
+Maintainer: Conor Anderson <conor.anderson@mail.utoronto.ca>
+Description: This package collects functions developed at the University of
+    Toronto Climate lab, often stylized as "Climate Lab at University of Toronto,
+    CL@UT".
+Depends:
+    R (>= 3.1.0)
+Imports:
+    stats,
+    utils,
+    zoo
+Suggets:
+    canadaHCD,
+    senamhiR
+License: GPL (>= 3)
+URL: https://github.com/ConorIA/claut/
+BugReports: https://github.com/ConorIA/claut/issues
+Encoding: UTF-8
+LazyData: true
+Remotes:
+    gavinsimpson/canadaHCD,
+    ConorIA/senamhiR
+RoxygenNote: 5.0.1
