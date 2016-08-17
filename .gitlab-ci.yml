@@ -1,7 +1,7 @@
 image: jangorecki/r-base-dev
 test:
   script:
-    - set _R_CHECK_FORCE_SUGGESTS_=FALSE 
+    - export _R_CHECK_FORCE_SUGGESTS_=FALSE 
     - R -q -e "install.packages('zoo', repos='http://cran.rstudio.com/')"
     - R CMD build . --no-build-vignettes --no-manual
     - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
