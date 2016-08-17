@@ -17,15 +17,12 @@ Imports:
     stats,
     utils,
     zoo
-Suggets:
+Suggests:
     canadaHCD,
     senamhiR
 License: GPL (>= 3)
-URL: https://github.com/ConorIA/claut/
-BugReports: https://github.com/ConorIA/claut/issues
+URL: https://gitlab.com/ConorIA/claut
+BugReports: https://gitlab.com/ConorIA/claut/issues
 Encoding: UTF-8
 LazyData: true
-Remotes:
-    gavinsimpson/canadaHCD,
-    ConorIA/senamhiR
 RoxygenNote: 5.0.1
