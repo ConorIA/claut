@@ -1,4 +1,4 @@
-image: jangorecki/r-base-dev
+image: conoria/ralpine-min
 test:
   script:
     - export _R_CHECK_FORCE_SUGGESTS_=FALSE 

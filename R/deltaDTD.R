@@ -37,7 +37,7 @@ deltaDTD <- function(data, period = "z", QA = TRUE) {
   dat$DTD_Tmin <- dat$MinTemp - c(NA, dat$MinTemp[1:(nrow(dat)-1)])
 
   # Calculate deltaDTD
-  dat$"\U0394_DTD" <- dat$DTD_Tmax-dat$DTD_Tmin
+  dat$deltaDTD <- dat$DTD_Tmax-dat$DTD_Tmin
 
   # Drop the data we don't need form the table.
   dat <- cbind(dat[,1:6], dat[,(ncol(dat)-2):ncol(dat)])
@@ -88,10 +88,10 @@ deltaDTD <- function(data, period = "z", QA = TRUE) {
     dat$G_Tmin <- dat$DTD_Tmin/dat$SD_Tmin
 
     # Calculate deltaDTD
-    dat$"\U0394_DTD" <- dat$DTD_Tmax-dat$DTD_Tmin
+    dat$deltaDTD <- dat$DTD_Tmax-dat$DTD_Tmin
 
     # Add Yr-Mon and organize the table
-    dat$Yr.Mon <- format(zoo::as.yearmon(paste(dat$Year, dat$Month, sep = "-")), "%Y-%m")
+    dat$Yr.Mon <- zoo::as.yearmon(paste(dat$Year, dat$Month, sep = "-"))
     dat <- cbind(dat[2],dat[1],dat[ncol(dat)],dat[3:(ncol(dat)-1)])
 
     ## Stop here for monthly data
@@ -165,10 +165,10 @@ deltaDTD <- function(data, period = "z", QA = TRUE) {
       dat$G_Tmin <- dat$DTD_Tmin/dat$SD_Tmin
 
       # Calculate deltaDTD
-      dat$"\U0394_DTD" <- dat$DTD_Tmax-dat$DTD_Tmin
+      dat$deltaDTD <- dat$DTD_Tmax-dat$DTD_Tmin
 
       # Add Yr-Season, and sort the table
-      dat$Yr.S <- format(zoo::as.yearqtr(paste(dat$Year, dat$Season, sep = "-")), "%Y-%q")
+      dat$Yr.S <- zoo::as.yearqtr(paste(dat$Year, dat$Season, sep = "-"))
       dat <- cbind(dat[2],dat[1],dat[ncol(dat)],dat[3:(ncol(dat)-1)])
 
       ## Stop here for seasonal data
@@ -219,7 +219,7 @@ deltaDTD <- function(data, period = "z", QA = TRUE) {
       dat$G_Tmin <- dat$DTD_Tmin/dat$SD_Tmin
 
       # Calculate deltaDTD
-      dat$"\U0394_DTD" <- dat$DTD_Tmax-dat$DTD_Tmin
+      dat$deltaDTD <- dat$DTD_Tmax-dat$DTD_Tmin
 
       ## Stop here for annual data
       return(dat)
