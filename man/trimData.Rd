@@ -4,14 +4,16 @@
 \alias{trimData}
 \title{Trim daily data to a desired start and end year}
 \usage{
-trimData(data, start, end)
+trimData(datain, start, end, column = "Date")
 }
 \arguments{
-\item{data}{data.frame; define the data that should be trimmed}
+\item{datain}{data.frame; define the data that should be trimmed}
 
 \item{start}{numerical; the first year to include}
 
 \item{end}{numerical; the last year to include}
+
+\item{column}{integer or character; the number or the name of the date column}
 }
 \description{
 Trim a daily data set to a desired start and end year. Originally written for data obtained using the \code{canadaHCD} package.
@@ -22,4 +24,3 @@ Trim a daily data set to a desired start and end year. Originally written for da
 \author{
 Conor I. Anderson
 }
-
