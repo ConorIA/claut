@@ -1,8 +1,11 @@
-image: conoria/alpine-r
-test:
+before_script:
+  - export _R_CHECK_CRAN_INCOMING_=FALSE
+  - export _R_CHECK_FORCE_SUGGESTS_=TRUE
+
+alpine-r:
+  stage: test
+  image: conoria/alpine-r
   script:
-    - export _R_CHECK_FORCE_SUGGESTS_=FALSE 
-    - R -q -e "install.packages('zoo', repos='http://cran.rstudio.com/')"
-    - R CMD build . --no-build-vignettes --no-manual
-    - PKG_FILE_NAME=$(ls -1t *.tar.gz | head -n 1)
-    - R CMD check "${PKG_FILE_NAME}" --no-build-vignettes --no-manual --as-cran
+    - Rscript -e 'devtools::install_deps()'
+    - Rscript -e 'devtools::check()'
+
