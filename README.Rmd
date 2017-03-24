@@ -15,7 +15,7 @@ This package, currently at a very early stage of development, will eventually ho
 
 The following functions were used in studies that are currently under review. If you are a reviewer, this is probably what you are looking for. Note that these functions may undergo some minor optimization or code changes, but the results that they produce will always be the same. 
 
-  - dataEliminator: This set of functions is used to artificually introduce missing values into monthly climate series. In its current state, there are three variations of the function. These are likely to be refactored. 
+  - dataEliminator: This set of functions is used to artificially introduce missing values into monthly climate series. In its current state, there are three variations of the function. These are likely to be re-factored. 
     1.  [`dataEliminator()`](https://gitlab.com/ConorIA/claut/blob/master/R/dataEliminator.R): The base function that eliminates data for a single year-month of data
     2.  [`dataEliminatorMassive()`](https://gitlab.com/ConorIA/claut/blob/master/R/dataEliminatorMassive.R): A helper function that calls the base function multiple times, e.g. 1000 repetitions of the same test
     3.  [`dataEliminatorThorough()`](https://gitlab.com/ConorIA/claut/blob/master/R/dataEliminatorThorough.R): A modified version of the base function that performs consecutive elimination of all possible combinations of $k$ consecutive missing values
@@ -25,6 +25,9 @@ The following functions were used in studies that are currently under review. If
 There are some other helper functions in this package that are here in hopes that they prove useful to someone someday. These are: 
 
   - [`trim_data()`](https://gitlab.com/ConorIA/claut/blob/master/R/trimData.R): An easy function to trim a `data.frame` to given start and end years
+  - functions for working with ASCII gridded data; these were originally written to parse NOAA's [GHCN Merged gridded data set](https://www.ncdc.noaa.gov/temp-and-precip/ghcn-gridded-products/)
+    - [`parse_ASCII_grid()`](https://gitlab.com/ConorIA/claut/blob/master/R/parse_ASCII_grid.R): Reads an ASCII file of gridded data into a 3D matrix. This is currently quite slow and a little noisy, but it works.
+    - [`generate_wkt_csv()`](https://gitlab.com/ConorIA/claut/blob/master/R/generate_wkt_csv.R): This function takes a list of matrix names and generates a `.csv` file of WKT-formatted polygons for import into QGIS and other GIS software.
 
 ## Other packages
 
