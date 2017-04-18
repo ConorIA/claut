@@ -29,19 +29,10 @@ There are some other helper functions in this package that are here in hopes tha
     - [`parse_ASCII_grid()`](https://gitlab.com/ConorIA/claut/blob/master/R/parse_ASCII_grid.R): Reads an ASCII file of gridded data into a 3D matrix. This is currently quite slow and a little noisy, but it works.
     - [`generate_wkt_csv()`](https://gitlab.com/ConorIA/claut/blob/master/R/generate_wkt_csv.R): This function takes a list of matrix names and generates a `.csv` file of WKT-formatted polygons for import into QGIS and other GIS software.
 
-## Other packages
+## Other resources
 
-Members of the lab also use other packages that are too big to fit into this package. These are: 
+For other resources from the climate lab and beyond, please see our [CL@UT Resources List](https://gitlab.com/ConorIA/claut-resources).
 
-### Package we maintain:
-
-  - [senamhiR: A Collection of Functions to Obtain Peruvian Climate Data](https://gitlab.com/ConorIA/senamhiR/)
-  - [canadaHCDx: Additional functions for the canadaHCD package](https://gitlab.com/ConorIA/canadaHCDx/) 
-
-### Packages we use: 
-
-  - [canadaHCD: Canadian Historical Climate Data](https://github.com/gavinsimpson/canadaHCD/) by [Gavin L. Simpson](https://github.com/gavinsimpson) 
-  
-## Contributing
+## Contributing to the `claut` package
 
 The members of the Climate Lab are, first and foremost, academics and researchers, not coders. If you would like to contribute code improvements or patches to any of the functions here, please feel free to open a [merge request](https://gitlab.com/ConorIA/claut/merge_requests). Please note that code you contribute will be attributed to you, and will be released under the terms of the [GNU GPLv3](https://gitlab.com/ConorIA/claut/blob/master/LICENSE.md).
