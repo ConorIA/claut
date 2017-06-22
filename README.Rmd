@@ -28,6 +28,7 @@ There are some other helper functions in this package that are here in hopes tha
   - functions for working with ASCII gridded data; these were originally written to parse NOAA's [GHCN Merged gridded data set](https://www.ncdc.noaa.gov/temp-and-precip/ghcn-gridded-products/)
     - [`parse_ASCII_grid()`](https://gitlab.com/ConorIA/claut/blob/master/R/parse_ASCII_grid.R): Reads an ASCII file of gridded data into a 3D matrix. This is currently quite slow and a little noisy, but it works.
     - [`generate_wkt_csv()`](https://gitlab.com/ConorIA/claut/blob/master/R/generate_wkt_csv.R): This function takes a list of matrix names and generates a `.csv` file of WKT-formatted polygons for import into QGIS and other GIS software.
+    - [`gcm_anomalies()`](https://gitlab.com/ConorIA/claut/blob/master/R/gcm_anomalies.R): This function processes NetCDF files donwloaded from [ESGF-CoG](https://www.earthsystemcog.org/projects/cog/) to perform delta analyses. It has been tested with a few AR5 models for temperature variables (`tas`, `tasmax`, and `tasmin`).
 
 ## Other resources
 

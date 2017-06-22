@@ -1,7 +1,7 @@
 Package: claut
 Type: Package
 Title: Functions from the University of Toronto Climate Lab
-Version: 0.1.1
+Version: 0.1.2
 Date: 2017-03-24
 Authors@R: c(person(given = c("Conor", "I."), family = "Anderson",
            role = c("aut","cre"), email = "conor.anderson@mail.utoronto.ca"),
@@ -16,6 +16,7 @@ Depends:
 Imports:
     gdata,
     readr,
+    RNetCDF,
     stats,
     tibble,
     utils,
