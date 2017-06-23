@@ -6,6 +6,15 @@ Functions from the University of Toronto Climate Lab
 
 This package, currently at a very early stage of development, will eventually host many of the functions generated at the University of Toronto Climate Lab. For now, I (Conor Anderson) am the sole maintainer of, and contributor to, this package, however, I hope that eventually all of the miscellaneous functions that are produced in the lab can find their way into this package. Any function contained in this package is documented. Type `?function_name` in R to access this documentation.
 
+Installation
+------------
+
+This package can be installed via the `install_git()` function in the `devtools` or `remotes` packages, or by running the following convenience script.
+
+``` r
+source("https://gitlab.com/ConorIA/claut/raw/master/install_claut.R")
+```
+
 Functions used in papers in review
 ----------------------------------
 
@@ -25,6 +34,7 @@ There are some other helper functions in this package that are here in hopes tha
 -   functions for working with ASCII gridded data; these were originally written to parse NOAA's [GHCN Merged gridded data set](https://www.ncdc.noaa.gov/temp-and-precip/ghcn-gridded-products/)
     -   [`parse_ASCII_grid()`](https://gitlab.com/ConorIA/claut/blob/master/R/parse_ASCII_grid.R): Reads an ASCII file of gridded data into a 3D matrix. This is currently quite slow and a little noisy, but it works.
     -   [`generate_wkt_csv()`](https://gitlab.com/ConorIA/claut/blob/master/R/generate_wkt_csv.R): This function takes a list of matrix names and generates a `.csv` file of WKT-formatted polygons for import into QGIS and other GIS software.
+    -   [`gcm_anomalies()`](https://gitlab.com/ConorIA/claut/blob/master/R/gcm_anomalies.R): This function processes NetCDF files donwloaded from [ESGF-CoG](https://www.earthsystemcog.org/projects/cog/) to perform delta analyses. It has been tested with a few AR5 models for temperature variables (`tas`, `tasmax`, and `tasmin`).
 
 Other resources
 ---------------

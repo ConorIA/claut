@@ -11,6 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This package, currently at a very early stage of development, will eventually host many of the functions generated at the University of Toronto Climate Lab. For now, I (Conor Anderson) am the sole maintainer of, and contributor to, this package, however, I hope that eventually all of the miscellaneous functions that are produced in the lab can find their way into this package. Any function contained in this package is documented. Type `?function_name` in R to access this documentation. 
 
+## Installation
+
+This package can be installed via the `install_git()` function in the `devtools` or `remotes` packages, or by running the following convenience script.
+
+``` {r, eval = FALSE}
+source("https://gitlab.com/ConorIA/claut/raw/master/install_claut.R")
+```
+
 ## Functions used in papers in review
 
 The following functions were used in studies that are currently under review. If you are a reviewer, this is probably what you are looking for. Note that these functions may undergo some minor optimization or code changes, but the results that they produce will always be the same. 
