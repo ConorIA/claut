@@ -8,24 +8,27 @@
 #' @param proj list containing vectors of the projection periods (defaults to 2020s, 2050s, and 2080s)
 #' @param simple_names Boolean; whether to simplify the projection interval names (ie. 2020s instead of 2011-2040)
 #' @param calc_anom Boolean; whether to calculate anomaly values.
+#' @param ensemble_average Boolean; whether to average different ensembles for the same variable/model/scenario.
 #'
 #' @return a class \code{data.frame}
 #' @export
 #'
+#' @importFrom magrittr %>%
+#' @importFrom dplyr filter group_by summarize
 #' @importFrom RNetCDF open.nc print.nc utcal.nc var.get.nc
-#' @importFrom zoo as.yearmon
-#' @importFrom stats aggregate
+#' @importFrom tibble as_tibble tibble
 #' @importFrom utils capture.output
+#' @importFrom zoo as.yearmon
 #'
 #' @examples
-#' \dontrun{annual <- gcm_anomalies(getwd(), -7.023833, -76.465222, 0, 1971:2000, calc_anom = TRUE)}
+#' \dontrun{annual <- gcm_anomalies(getwd(), -7.023833, -76.465222, 0, 1971:2000, calc_anoms = TRUE)}
 
-gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj = list(2011:2040, 2041:2070, 2071:2100), simple_names = FALSE, calc_anom = TRUE) {
+gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj = list(2011:2040, 2041:2070, 2071:2100), simple_names = FALSE, calc_anom = TRUE, ensemble_average = TRUE) {
 
   files_list <- dir(dir)
   files_list <- files_list[grep("*.nc", files_list)]
 
-  dat <- data.frame()
+  dat <- as_tibble(matrix(NA, nrow = length(files_list), ncol = 8))
 
   for (nc_file in seq_along(files_list)) {
     components <- unlist(strsplit(files_list[nc_file], "_"))
@@ -34,7 +37,7 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj
     scenario <- components[4]
     ensemble <- components[5]
 
-    nc_nc <- open.nc(files_list[nc_file])
+    nc_nc <- open.nc(file.path(dir, files_list[nc_file]))
 
     nc_summary <- capture.output(print.nc(nc_nc))
     time_string <- sub(".*?time:units = \\\"(.*?)\\\".*", "\\1", nc_summary[grep("time:units =", nc_summary)])
@@ -52,39 +55,39 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj
     lon_step <- (nc_lon[2] - nc_lon[3])/2
     lon_cell <- which(nc_lon + lon_step < lon & nc_lon - lon_step > lon)
 
-    time_series <- as.data.frame(cbind(nc_time, (nc_var[lon_cell, lat_cell, ] - 273.15)))
-    time_series$Year <- format(zoo::as.yearmon(time_series$nc_time), format = "%Y")
-    time_series$Month <- format(zoo::as.yearmon(time_series$nc_time), format = "%m")
+    time_series <- tibble(Time = nc_time, Year = format(as.yearmon(Time), format = "%Y"),
+                          Month = format(as.yearmon(Time), format = "%m"),
+                          Var = (nc_var[lon_cell, lat_cell, ] - 273.15))
 
     if (timeslice > 0 & timeslice < 13) {
-      time_series <- time_series[time_series$Month == sprintf("%02d", timeslice),]
+      time_series <- filter(time_series, Month == sprintf("%02d", timeslice))
     } else if (timeslice > 12 & timeslice < 17) {
       if (timeslice == 13) {
-        time_series <- time_series[time_series$Month %in% sprintf("%02d", c(1, 2, 12)),]
+        time_series <- filter(time_series, Month %in% sprintf("%02d", c(1, 2, 12)))
         time_series$Year[time_series$Month == sprintf("%02d", 12)] <- as.numeric(time_series$Year[time_series$Month == sprintf("%02d", 12)]) + 1
       }
       if (timeslice == 14) {
-        time_series <- time_series[time_series$Month %in% sprintf("%02d", c(3, 4, 5)),]
+        time_series <- filter(time_series, Month %in% sprintf("%02d", c(3, 4, 5)))
       }
       if (timeslice == 15) {
-        time_series <- time_series[time_series$Month %in% sprintf("%02d", c(6, 7, 8)),]
+        time_series <- filter(time_series, Month %in% sprintf("%02d", c(6, 7, 8)))
       }
       if (timeslice == 16) {
-        time_series <- time_series[time_series$Month %in% sprintf("%02d", c(9, 10, 11)),]
+        time_series <- filter(time_series, Month %in% sprintf("%02d", c(9, 10, 11)))
       }
     }
 
-    result <- aggregate(time_series$V2, by = list(time_series$Year), FUN = mean)
+    result <- time_series %>% group_by(Year) %>% summarize(Mean = mean(Var))
 
-    result$Group.1 <- as.numeric(result$Group.1)
+    result$Year <- as.numeric(result$Year)
     periods <- rep(NA, length(proj))
 
     if (scenario == "historical") {
-      baseln <- mean(result$x[result$Group.1 >= min(baseline) & result$Group.1 <= max(baseline)])
+      baseln <- mean(result$Mean[result$Year >= min(baseline) & result$Year <= max(baseline)])
     } else {
       baseln <- NA
       for (i in seq_along(proj)) {
-        periods[i] <- mean(result$x[result$Group.1 >= min(proj[[i]]) & result$Group.1 <= max(proj[[i]])])
+        periods[i] <- mean(result$Mean[result$Year >= min(proj[[i]]) & result$Year <= max(proj[[i]])])
       }
     }
 
@@ -99,23 +102,10 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj
 
     names(row) <- col_names
 
-    dat <- rbind(dat, row, stringsAsFactors = FALSE)
+    dat[nc_file,] <- row
     colnames(dat) <- col_names
   }
-  if (calc_anom) {
-    dat_proj <- dat[dat$Scenario != "historical",]
-    dat_hist <- dat[dat$Scenario == "historical",]
-
-    for (i in 1:nrow(dat_hist)) {
-      dat_proj[dat_proj$Model == dat_hist$Model[i] & dat_proj$Variable == dat_hist$Variable[i], 5] <- dat_hist[i, 5]
-      for (col in 6:ncol(dat_proj)) {
-        rows <- which(dat_proj$Model == dat_hist$Model[i] & dat_proj$Variable == dat_hist$Variable[i])
-        for (row in rows) {
-          dat_proj[row, col] <- dat_proj[row, col] - dat_hist[i, 5]
-        }
-      }
-      dat <- dat_proj
-    }
-  }
+  if (calc_anom) dat <- calc_anoms(dat)
+  if (ensemble_average) dat <- ensemble_means(dat)
   dat
 }

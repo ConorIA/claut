@@ -6,7 +6,7 @@
 \usage{
 gcm_anomalies(dir = getwd(), lat, lon, timeslice = 0, baseline,
   proj = list(2011:2040, 2041:2070, 2071:2100), simple_names = FALSE,
-  calc_anom = TRUE)
+  calc_anom = TRUE, ensemble_average = TRUE)
 }
 \arguments{
 \item{dir}{character; path to the directory containing the \code{.nc} files you wish to process}
@@ -24,6 +24,8 @@ gcm_anomalies(dir = getwd(), lat, lon, timeslice = 0, baseline,
 \item{simple_names}{Boolean; whether to simplify the projection interval names (ie. 2020s instead of 2011-2040)}
 
 \item{calc_anom}{Boolean; whether to calculate anomaly values.}
+
+\item{ensemble_average}{Boolean; whether to average different ensembles for the same variable/model/scenario.}
 }
 \value{
 a class \code{data.frame}
@@ -32,5 +34,5 @@ a class \code{data.frame}
 Generate table GCM anomaly data
 }
 \examples{
-\dontrun{annual <- gcm_anomalies(getwd(), -7.023833, -76.465222, 0, 1971:2000, calc_anom = TRUE)}
+\dontrun{annual <- gcm_anomalies(getwd(), -7.023833, -76.465222, 0, 1971:2000, calc_anoms = TRUE)}
 }

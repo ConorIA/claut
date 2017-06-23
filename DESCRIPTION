@@ -14,7 +14,9 @@ Description: Collection of functions developed at the University of
 Depends:
     R (>= 3.1.0)
 Imports:
+    dplyr,
     gdata,
+    magrittr,
     readr,
     RNetCDF,
     stats,
