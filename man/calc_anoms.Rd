@@ -4,7 +4,7 @@
 \alias{calc_anoms}
 \title{Calculate the anomaly values for a table produced by gcm_anomalies()}
 \usage{
-calc_anoms(indat)
+calc_anoms(datin)
 }
 \arguments{
 \item{datin}{a \code{tbl_df} produced by gcm_anomalies().}

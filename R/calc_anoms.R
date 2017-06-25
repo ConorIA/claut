@@ -5,9 +5,9 @@
 #' @importFrom dplyr filter
 #' @export
 
-calc_anoms <- function(indat) {
-  dat_proj <- filter(indat, Scenario != "historical")
-  dat_hist <- filter(indat, Scenario == "historical")
+calc_anoms <- function(datin) {
+  dat_proj <- filter(datin, Scenario != "historical")
+  dat_hist <- filter(datin, Scenario == "historical")
 
   for (i in 1:nrow(dat_hist)) {
     dat_proj[dat_proj$Model == dat_hist$Model[i] & dat_proj$Variable == dat_hist$Variable[i], 5] <- unlist(dat_hist[i, 5])

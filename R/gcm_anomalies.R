@@ -5,7 +5,7 @@
 #' @param lon numeric; the longitude of the target cell
 #' @param timeslice numeric; 1-16: annual (0), monthly (1-12), seasonal (13-16)
 #' @param baseline the baseline on which the check the data (defaults to 1971:2000)
-#' @param proj list containing vectors of the projection periods (defaults to 2020s, 2050s, and 2080s)
+#' @param start projection start year (defaults to 2011)
 #' @param simple_names Boolean; whether to simplify the projection interval names (ie. 2020s instead of 2011-2040)
 #' @param calc_anom Boolean; whether to calculate anomaly values.
 #' @param ensemble_average Boolean; whether to average different ensembles for the same variable/model/scenario.
@@ -17,18 +17,37 @@
 #' @importFrom dplyr filter group_by summarize
 #' @importFrom RNetCDF open.nc print.nc utcal.nc var.get.nc
 #' @importFrom tibble as_tibble tibble
-#' @importFrom utils capture.output
+#' @importFrom utils capture.output setTxtProgressBar txtProgressBar
 #' @importFrom zoo as.yearmon
 #'
 #' @examples
-#' \dontrun{annual <- gcm_anomalies(getwd(), -7.023833, -76.465222, 0, 1971:2000, calc_anoms = TRUE)}
+#' \dontrun{annual <- gcm_anomalies(getwd(), -7.023833, -76.465222, 0, 1971:2000, calc_anom = TRUE)}
 
-gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj = list(2011:2040, 2041:2070, 2071:2100), simple_names = FALSE, calc_anom = TRUE, ensemble_average = TRUE) {
+gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, start = 2011, simple_names = FALSE, calc_anom = TRUE, ensemble_average = TRUE) {
 
-  files_list <- dir(dir)
-  files_list <- files_list[grep("*.nc", files_list)]
+  ## Generate projection periods based on baseline length and start year
+  number_of_periods <- (2100 - start + 1) %/% length(baseline)
+  proj <- list()
+  period_names <- rep(NA, number_of_periods)
+  for (per in 1:number_of_periods) {
+    st <- start + (length(baseline) * (per - 1))
+    ed <- start + (length(baseline) * per) - 1
+    period <- list(st:ed)
+    period_names[per] <- if(simple_names) paste0(mean(unlist(period)) %/% 10 * 10, "s") else paste0(st, "-", ed)
+    proj <- c(proj, period)
+  }
 
-  dat <- as_tibble(matrix(NA, nrow = length(files_list), ncol = 8))
+  ## Get a list of NetCFD files in the directory
+  files_list <- grep("*.nc", dir(dir), value = TRUE)
+
+  ## Prepare a table with the right dimensions
+  dat <- as_tibble(matrix(NA, nrow = length(files_list), ncol = 5 + number_of_periods))
+
+  # Process each NetCDF file
+  print("Processing the NetCDF files...")
+  ## Set up a progress Bar
+  prog <- txtProgressBar(min = 0, max = length(files_list), style = 3)
+  on.exit(close(prog))
 
   for (nc_file in seq_along(files_list)) {
     components <- unlist(strsplit(files_list[nc_file], "_"))
@@ -47,13 +66,14 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj
     nc_lat <- var.get.nc(nc_nc, "lat")
     nc_lon <- var.get.nc(nc_nc, "lon")
 
+    # Convert -180--180 longitudes to 0--360 if necessary
     if (min(nc_lon >= 0)) lon <- ifelse(lon <0, 360 + lon, lon)
 
-    lat_step <- (nc_lat[2] - nc_lat[3])/2
-    lat_cell <- which(nc_lat + lat_step < lat & nc_lat - lat_step > lat)
-
-    lon_step <- (nc_lon[2] - nc_lon[3])/2
-    lon_cell <- which(nc_lon + lon_step < lon & nc_lon - lon_step > lon)
+    # Get the grid cell we are interested in
+    step <- (nc_lat[2] - nc_lat[3])/2
+    lat_cell <- which(nc_lat + step < lat & nc_lat - step > lat)
+    step <- (nc_lon[2] - nc_lon[3])/2
+    lon_cell <- which(nc_lon + step < lon & nc_lon - step > lon)
 
     time_series <- tibble(Time = nc_time, Year = format(as.yearmon(Time), format = "%Y"),
                           Month = format(as.yearmon(Time), format = "%m"),
@@ -78,7 +98,6 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj
     }
 
     result <- time_series %>% group_by(Year) %>% summarize(Mean = mean(Var))
-
     result$Year <- as.numeric(result$Year)
     periods <- rep(NA, length(proj))
 
@@ -91,11 +110,6 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj
       }
     }
 
-    period_names <- rep(NA, length(periods))
-    for (i in seq_along(proj)) {
-      period_names[i] <- if(simple_names) paste0(mean(proj[[i]]) %/% 10 * 10, "s") else paste0(min(proj[[i]]), "-", max(proj[[i]]))
-    }
-
     col_names <- c("Variable", "Model", "Scenario", "Ensemble", paste0("Baseline ", min(baseline), "-", max(baseline)), period_names)
     row <- list(var, model, scenario, ensemble, baseln)
     row <- c(row, periods)
@@ -104,8 +118,13 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, proj
 
     dat[nc_file,] <- row
     colnames(dat) <- col_names
+    setTxtProgressBar(prog, value = nc_file)
   }
+
+  # Compute additional metrics
   if (calc_anom) dat <- calc_anoms(dat)
   if (ensemble_average) dat <- ensemble_means(dat)
+
+  # Return our tibble
   dat
 }
