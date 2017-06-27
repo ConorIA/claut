@@ -2,10 +2,13 @@ before_script:
   - export _R_CHECK_CRAN_INCOMING_=FALSE
   - export _R_CHECK_FORCE_SUGGESTS_=TRUE
 
-alpine-r:
+r-base:
   stage: test
-  image: conoria/alpine-r
+  image: r-base
   script:
+    - apt-get update -qq
+    - apt-get install -y --no-install-recommends libcurl4-openssl-dev libnetcdf11 libssh2-1-dev libssl-dev libxml2-dev git
+    - Rscript -e 'install.packages(c("devtools", "roxygen2", "testthat"), repos = "https://cloud.r-project.org/")'
     - Rscript -e 'devtools::install_deps()'
     - Rscript -e 'devtools::check()'
 
