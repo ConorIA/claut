@@ -8,6 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Functions from the University of Toronto Climate Lab
+[![build status](https://gitlab.com/ConorIA/claut/badges/master/build.svg)](https://gitlab.com/ConorIA/claut/commits/master) [![Build status](https://ci.appveyor.com/api/projects/status/kioqnwa6xqs1f4j5?svg=true)](https://ci.appveyor.com/project/ConorIA/claut)
 
 This package, currently at a very early stage of development, will eventually host many of the functions generated at the University of Toronto Climate Lab. For now, I (Conor Anderson) am the sole maintainer of, and contributor to, this package, however, I hope that eventually all of the miscellaneous functions that are produced in the lab can find their way into this package. Any function contained in this package is documented. Type `?function_name` in R to access this documentation. 
 
