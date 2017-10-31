@@ -1,6 +1,7 @@
 #' Generate table GCM anomaly data
 #'
 #' @param dir character; path to the directory containing the \code{.nc} files you wish to process
+#' @param filters character; vector of filters to limit the \code{.nc} to be used.
 #' @param lat numeric; the latitude of the target cell
 #' @param lon numeric; the longitude of the target cell
 #' @param timeslice numeric; 1-16: annual (0), monthly (1-12), seasonal (13-16)
@@ -23,7 +24,7 @@
 #' @examples
 #' \dontrun{annual <- gcm_anomalies(getwd(), -7.023833, -76.465222, 0, 1971:2000, calc_anom = TRUE)}
 
-gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, start = 2011, simple_names = FALSE, calc_anom = TRUE, ensemble_average = TRUE) {
+gcm_anomalies <- function(dir = getwd(), filters, lat, lon, timeslice = 0, baseline, start = 2011, simple_names = FALSE, calc_anom = TRUE, ensemble_average = TRUE) {
 
   ## Generate projection periods based on baseline length and start year
   number_of_periods <- (2100 - start + 1) %/% length(baseline)
@@ -39,6 +40,10 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, star
 
   ## Get a list of NetCFD files in the directory
   files_list <- grep("*.nc", dir(dir), value = TRUE)
+
+  if (!missing(filters)) {
+    files_list <- files_list[grep(paste(filters, collapse="|"), files_list)]
+  }
 
   ## Prepare a table with the right dimensions
   dat <- as_tibble(matrix(NA, nrow = length(files_list), ncol = 5 + number_of_periods))
@@ -58,13 +63,13 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, star
 
     nc_nc <- open.nc(file.path(dir, files_list[nc_file]))
 
-    nc_summary <- capture.output(print.nc(nc_nc))
-    time_string <- sub(".*?time:units = \\\"(.*?)\\\".*", "\\1", nc_summary[grep("time:units =", nc_summary)])
-
     nc_var <- var.get.nc(nc_nc, var)
-    nc_time <- as.yearmon(utcal.nc(time_string, var.get.nc(nc_nc, "time"), type="s"))
+    nc_time <- as.yearmon(utcal.nc(att.get.nc(nc_nc, "time", "units"), var.get.nc(nc_nc, "time"), type="s"))
     nc_lat <- var.get.nc(nc_nc, "lat")
     nc_lon <- var.get.nc(nc_nc, "lon")
+
+    close.nc(nc_nc)
+    rm(nc_nc)
 
     # Convert -180--180 longitudes to 0--360 if necessary
     if (min(nc_lon >= 0)) lon <- ifelse(lon <0, 360 + lon, lon)
@@ -118,6 +123,10 @@ gcm_anomalies <- function(dir = getwd(), lat, lon, timeslice = 0, baseline, star
 
     dat[nc_file,] <- row
     colnames(dat) <- col_names
+
+    rm(nc_var, nc_time, nc_lat, nc_lon)
+    gc()
+
     setTxtProgressBar(prog, value = nc_file)
   }
 

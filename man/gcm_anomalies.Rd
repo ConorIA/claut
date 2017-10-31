@@ -4,12 +4,14 @@
 \alias{gcm_anomalies}
 \title{Generate table GCM anomaly data}
 \usage{
-gcm_anomalies(dir = getwd(), lat, lon, timeslice = 0, baseline,
+gcm_anomalies(dir = getwd(), filters, lat, lon, timeslice = 0, baseline,
   start = 2011, simple_names = FALSE, calc_anom = TRUE,
   ensemble_average = TRUE)
 }
 \arguments{
 \item{dir}{character; path to the directory containing the \code{.nc} files you wish to process}
+
+\item{filters}{character; vector of filters to limit the \code{.nc} to be used.}
 
 \item{lat}{numeric; the latitude of the target cell}
 
