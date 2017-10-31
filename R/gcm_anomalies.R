@@ -16,7 +16,7 @@
 #'
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter group_by summarize
-#' @importFrom RNetCDF open.nc print.nc utcal.nc var.get.nc
+#' @importFrom RNetCDF att.get.nc open.nc print.nc utcal.nc var.get.nc
 #' @importFrom tibble as_tibble tibble
 #' @importFrom utils capture.output setTxtProgressBar txtProgressBar
 #' @importFrom zoo as.yearmon
