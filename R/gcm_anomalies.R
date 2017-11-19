@@ -75,14 +75,25 @@ gcm_anomalies <- function(dir = getwd(), filters, lat, lon, timeslice = 0, basel
     if (min(nc_lon >= 0)) lon <- ifelse(lon <0, 360 + lon, lon)
 
     # Get the grid cell we are interested in
-    step <- (nc_lat[2] - nc_lat[3])/2
-    lat_cell <- which(nc_lat + step < lat & nc_lat - step > lat)
-    step <- (nc_lon[2] - nc_lon[3])/2
-    lon_cell <- which(nc_lon + step < lon & nc_lon - step > lon)
+    lat_step <- (nc_lat[3] - nc_lat[2])/2
+    lat_cell <- which(nc_lat - lat_step < lat & nc_lat + lat_step > lat)
+    lon_step <- (nc_lon[3] - nc_lon[2])/2
+    lon_cell <- which(nc_lon - lon_step < lon & nc_lon + lon_step > lon)
+
+    # Edge cases where the requested target is *right* on the edge of two cells
+    # FIXME: Might have to add something similar for latitude
+    if (length(lon_cell) == 0) {
+      lon_left <- which(nc_lon + lon_step == lon & nc_lon - lon_step < lon)
+      lon_right <- which(nc_lon + lon_step > lon & nc_lon - lon_step == lon)
+      warning("You asked for a target between two cells. We'll average them.")
+      var_data <- apply((nc_var[lon_left:lon_right, , ] - 273.15), c(2,3), mean)[lat_cell,]
+    } else {
+      var_data <- (nc_var[lon_cell, lat_cell, ] - 273.15)
+    }
 
     time_series <- tibble(Time = nc_time, Year = format(as.yearmon(Time), format = "%Y"),
                           Month = format(as.yearmon(Time), format = "%m"),
-                          Var = (nc_var[lon_cell, lat_cell, ] - 273.15))
+                          Var = var_data)
 
     if (timeslice > 0 & timeslice < 13) {
       time_series <- filter(time_series, Month == sprintf("%02d", timeslice))
