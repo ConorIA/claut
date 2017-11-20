@@ -16,9 +16,10 @@
 #'
 #' @importFrom magrittr %>%
 #' @importFrom dplyr filter group_by summarize
-#' @importFrom RNetCDF att.get.nc close.nc open.nc print.nc utcal.nc var.get.nc
+#' @importFrom ncdf4 nc_close nc_open ncvar_get
+#' @importFrom ncdf4.helpers get.split.filename.cmip5 nc.get.time.series nc.get.var.subset.by.axes
 #' @importFrom tibble as_tibble tibble
-#' @importFrom utils capture.output setTxtProgressBar txtProgressBar
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom zoo as.yearmon
 #'
 #' @examples
@@ -38,7 +39,7 @@ gcm_anomalies <- function(dir = getwd(), filters, lat, lon, timeslice = 0, basel
     proj <- c(proj, period)
   }
 
-  ## Get a list of NetCFD files in the directory
+  ## Get a list of NetCDF files in the directory
   files_list <- grep("*.nc", dir(dir), value = TRUE)
 
   if (!missing(filters)) {
@@ -55,40 +56,37 @@ gcm_anomalies <- function(dir = getwd(), filters, lat, lon, timeslice = 0, basel
   on.exit(close(prog))
 
   for (nc_file in seq_along(files_list)) {
-    components <- unlist(strsplit(files_list[nc_file], "_"))
-    var <- gsub("hist/", "", components[1])
-    model <- components[3]
-    scenario <- components[4]
-    ensemble <- components[5]
+    components <- get.split.filename.cmip5(files_list[nc_file])
+    var <- unname(components['var'])
+    model <- unname(components['model'])
+    scenario <- unname(components['emissions'])
+    ensemble <- unname(components['run'])
 
-    nc_nc <- open.nc(file.path(dir, files_list[nc_file]))
+    nc_nc <- nc_open(file.path(dir, files_list[nc_file]))
 
-    nc_var <- var.get.nc(nc_nc, var)
-    nc_time <- as.yearmon(utcal.nc(att.get.nc(nc_nc, "time", "units"), var.get.nc(nc_nc, "time"), type="s"))
-    nc_lat <- var.get.nc(nc_nc, "lat")
-    nc_lon <- var.get.nc(nc_nc, "lon")
+    nc_time <- nc.get.time.series(nc_nc, v = var, time.dim.name = "time")
+    nc_time <- as.yearmon(format(nc_time, format = "%Y-%m-%d hh:mm:ss"))
+    nc_lat <- ncvar_get(nc_nc, varid = "lat")
+    nc_lon <- ncvar_get(nc_nc, varid = "lon")
 
-    close.nc(nc_nc)
-    rm(nc_nc)
-
-    # Convert -180--180 longitudes to 0--360 if necessary
-    if (min(nc_lon >= 0)) lon <- ifelse(lon <0, 360 + lon, lon)
+    # Convert Western longitudes to degrees East
+    lon <- ifelse(lon <0, 360 + lon, lon)
 
     # Get the grid cell we are interested in
-    lat_step <- (nc_lat[3] - nc_lat[2])/2
-    lat_cell <- which(nc_lat - lat_step < lat & nc_lat + lat_step > lat)
-    lon_step <- (nc_lon[3] - nc_lon[2])/2
-    lon_cell <- which(nc_lon - lon_step < lon & nc_lon + lon_step > lon)
+    lon_index <- which.min(abs(nc_lon - lon))
+    lat_index <- which.min(abs(nc_lat - lat))
 
-    # Edge cases where the requested target is *right* on the edge of two cells
-    # FIXME: Might have to add something similar for latitude
-    if (length(lon_cell) == 0) {
-      lon_left <- which(nc_lon + lon_step == lon & nc_lon - lon_step < lon)
-      lon_right <- which(nc_lon + lon_step > lon & nc_lon - lon_step == lon)
-      warning("You asked for a target between two cells. We'll average them.")
-      var_data <- apply((nc_var[lon_left:lon_right, , ] - 273.15), c(2,3), mean)[lat_cell,]
+    # Now load only that grid data
+    nc_var <- nc.get.var.subset.by.axes(nc_nc, var, axis.indices = list(X = lon_index, Y = lat_index))
+
+    # Close the nc connection
+    nc_close(nc_nc)
+    rm(nc_nc)
+
+    if (var %in% c("tas", "tasmax", "tasmin")) {
+      var_data <- nc_var[1, 1, ] - 273.15
     } else {
-      var_data <- (nc_var[lon_cell, lat_cell, ] - 273.15)
+      stop("Sorry, for now I only work with temperature!")
     }
 
     time_series <- tibble(Time = nc_time, Year = format(as.yearmon(Time), format = "%Y"),
