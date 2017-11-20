@@ -12,7 +12,8 @@ Description: Collection of functions developed at the University of
     Toronto Climate lab, often stylized as "Climate Lab at University of Toronto,
     CL@UT".
 Depends:
-    R (>= 3.1.0)
+    R (>= 3.1.0),
+    PCICt
 Imports:
     dplyr,
     gdata,
