@@ -66,15 +66,16 @@ gcm_anomalies <- function(dir = getwd(), filters, lat, lon, timeslice = 0, basel
 
     nc_time <- nc.get.time.series(nc_nc, v = var, time.dim.name = "time")
     nc_time <- as.yearmon(format(nc_time, format = "%Y-%m-%d hh:mm:ss"))
-    nc_lat <- ncvar_get(nc_nc, varid = "lat")
-    nc_lon <- ncvar_get(nc_nc, varid = "lon")
+
+    lon_bnds <- ncvar_get(nc_nc, "lon_bnds")
+    lat_bnds <- ncvar_get(nc_nc, "lat_bnds")
 
     # Convert Western longitudes to degrees East
     lon <- ifelse(lon <0, 360 + lon, lon)
 
-    # Get the grid cell we are interested in
-    lon_index <- which.min(abs(nc_lon - lon))
-    lat_index <- which.min(abs(nc_lat - lat))
+    # Get the grid cell we are interested in by bounds
+    lat_index <- which(lat_bnds[1,] <= lat & lat_bnds[2,] >= lat)
+    lon_index <- which(lon_bnds[1,] <= lon & lon_bnds[2,] >= lon)
 
     # Now load only that grid data
     nc_var <- nc.get.var.subset.by.axes(nc_nc, var, axis.indices = list(X = lon_index, Y = lat_index))
@@ -133,7 +134,7 @@ gcm_anomalies <- function(dir = getwd(), filters, lat, lon, timeslice = 0, basel
     dat[nc_file,] <- row
     colnames(dat) <- col_names
 
-    rm(nc_var, nc_time, nc_lat, nc_lon)
+    rm(nc_var, nc_time, lat_bnds, lon_bnds)
     gc()
 
     setTxtProgressBar(prog, value = nc_file)
