@@ -5,3 +5,4 @@ README.Rmd
 README.md
 LICENSE.md
 install_claut.R
+appveyor.yml

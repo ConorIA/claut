@@ -4,14 +4,14 @@
 \alias{gcm_anomalies}
 \title{Generate table GCM anomaly data}
 \usage{
-gcm_anomalies(dir = getwd(), filters, lat, lon, timeslice = 0, baseline,
+gcm_anomalies(dir = getwd(), files, lat, lon, timeslice = 0, baseline,
   start = 2011, simple_names = FALSE, calc_anom = TRUE,
-  ensemble_average = TRUE)
+  ensemble_average = TRUE, cache_dir = NULL)
 }
 \arguments{
 \item{dir}{character; path to the directory containing the \code{.nc} files you wish to process}
 
-\item{filters}{character; vector of filters to limit the \code{.nc} to be used.}
+\item{files}{character; list of filenames to process. Any list item of >1 will be processed sequentially.}
 
 \item{lat}{numeric; the latitude of the target cell}
 
@@ -28,6 +28,8 @@ gcm_anomalies(dir = getwd(), filters, lat, lon, timeslice = 0, baseline,
 \item{calc_anom}{Boolean; whether to calculate anomaly values.}
 
 \item{ensemble_average}{Boolean; whether to average different ensembles for the same variable/model/scenario.}
+
+\item{cache_dir}{character; a directory to cache results (defaults to NULL, i.e. no cache.)}
 }
 \value{
 a class \code{data.frame}
