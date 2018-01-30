@@ -1,13 +1,17 @@
 #' Eliminate daily values within months of a data set and report the results
 #'
-#' @param month data.frame; a data.frame with a single year-month of data with no missing values
-#' @param csv character; path to a .csv file containing a single year-month of data with no missing values
+#' @param monthin data.frame; a data.frame with a single year-month of data with no missing values
 #' @param NAs numeric; a vector of the number of NA values to test
+#' @param no_if_tests integer; the number of tests to run; for consecutive sampling, tops at N - k + 1
 #' @param sampling character; the type of sampling to use: (r)andom, (c)onsecutive
 #' @param variables character; the names of the variables to test (we will try to auto-idenify the column number)
-#' @param simplify Boolean; whether to return simplified results
-#' @param interpolate Boolean; whether to use linear interpolation to approximate the missing values
+#' @param cores numeric; the number of cores to parallize over. Defaults to \code{parallel::detectCores() - 1}
 #'
+#' @importFrom dplyr bind_rows
+#' @importFrom iterators icount
+#' @importFrom foreach %do% %dopar%
+#' @importFrom doParallel registerDoParallel
+#' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom stats sd
 #' @importFrom utils read.csv
 #' @importFrom zoo na.approx
@@ -15,7 +19,7 @@
 #' @export
 #'
 
-missing_data_lab <- function(monthin, NAs, sampling = "z", variables = c("max", "min", "mean")) {
+missing_data_lab <- function(monthin, NAs, sampling = "z", no_of_tests = 1, variables = c("max", "min", "mean"), cores) {
 
   # Get the range of `k` and sampling type
   if (missing(NAs)) NAs <- as.numeric(readline(prompt = "Enter vector of values of `k` to test: "))
@@ -25,14 +29,12 @@ missing_data_lab <- function(monthin, NAs, sampling = "z", variables = c("max", 
   }
 
   for (var in seq_along(variables)) {
-    variables[var] <- as.numeric(grep(variables[var], names(month), ignore.case = TRUE))
+    variables[var] <- grep(variables[var], names(monthin), ignore.case = TRUE)
   }
   variables <- as.numeric(variables)
 
-  no_of_tests <- 10
-
   # First we generate our random data points that will be nullified
-  NAvectors <- foreach(k=ks, .combine = "append") %do% {
+  NAvectors <- foreach(k=NAs, .combine = "append") %do% {
     if (sampling == "r") {
       NAvec <- replicate(no_of_tests, list(sample(1:nrow(monthin), size = k, replace = FALSE)))
     }
@@ -50,11 +52,16 @@ missing_data_lab <- function(monthin, NAs, sampling = "z", variables = c("max", 
     NAvec
   }
 
-  registerDoParallel(cores = detectCores())
+  if (missing(cores)) {
+    cores <- detectCores() - 1
+  }
+  cl <- makeCluster(cores, outfile = "")
+  registerDoParallel(cl)
+  pb <- txtProgressBar(0, length(NAvectors), style = 3)
 
-  results <- foreach(NAs=NAvectors) %dopar% {
+  results <- foreach(i = icount(length(NAvectors)), .packages = c("dplyr", "foreach", "tibble", "reshape2", "zoo")) %dopar% {
 
-    NAs <- unlist(NAs)
+    NAs <- unlist(NAvectors[i])
 
     month <- foreach(var=variables, .combine = rbind) %do% {
       month <- monthin[,c(1, var)]
@@ -74,15 +81,17 @@ missing_data_lab <- function(monthin, NAs, sampling = "z", variables = c("max", 
     summary <- summary %>%
       left_join(., subset(summary, treatment == "Intact", select = c(-`treatment`, -`k`, -`days`)), by = c("yearmon", "var")) %>%
       mutate(err = abs(mean.x - mean.y), prop = err / sd.y) %>%
-      select(k, days, treatment, mean = mean.x, sd = sd.x, -`mean.y`, -`sd.y`, err, prop)
+      select(yearmon, var, k, days, treatment, mean = mean.x, sd = sd.x, -`mean.y`, -`sd.y`, err, prop)
 
     summary <- summary %>%
       left_join(., subset(summary, treatment == "wMiss", select = c(-`treatment`, -`k`, -`days`)), by = c("yearmon", "var")) %>%
       mutate(change_real = err.y - err.x, change_prop = prop.y - prop.x) %>%
-      select(k, days, treatment, mean = mean.x, sd = sd.x, -`mean.y`, -`sd.y`, err = err.x, prop = prop.x, change_real, change_prop)
+      select(yearmon, var, k, days, treatment, mean = mean.x, sd = sd.x, -`mean.y`, -`sd.y`, err = err.x, prop = prop.x, change_real, change_prop)
 
+    setTxtProgressBar(pb, i)
     list(summary = summary, details = month)
   }
 
-  list(summary = bind_rows(lapply(results, "[[", 1)), details = bind_rows(lapply(results, "[[", 2)))
+  stopCluster(cl)
+  suppressWarnings(list(summary = bind_rows(lapply(results, "[[", 1)), details = bind_rows(lapply(results, "[[", 2))))
 }
