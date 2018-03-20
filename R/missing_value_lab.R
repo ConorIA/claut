@@ -2,14 +2,14 @@
 #'
 #' @param monthin data.frame; a data.frame with a single year-month of data with no missing values
 #' @param NAs numeric; a vector of the number of NA values to test
-#' @param no_if_tests integer; the number of tests to run; for consecutive sampling, tops at N - k + 1
+#' @param no_of_tests integer; the number of tests to run; for consecutive sampling, tops at N - k + 1
 #' @param sampling character; the type of sampling to use: (r)andom, (c)onsecutive
 #' @param variables character; the names of the variables to test (we will try to auto-idenify the column number)
 #' @param cores numeric; the number of cores to parallize over. Defaults to \code{parallel::detectCores() - 1}
 #'
 #' @importFrom dplyr bind_rows
 #' @importFrom iterators icount
-#' @importFrom foreach %do% %dopar%
+#' @importFrom foreach %do% %dopar% foreach
 #' @importFrom doParallel registerDoParallel
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom stats sd

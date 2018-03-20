@@ -1,28 +1,27 @@
 Package: claut
 Type: Package
 Title: Functions from the University of Toronto Climate Lab
-Version: 0.1.2
-Date: 2017-03-24
+Version: 0.1.3
+Date: 2018-03-19
 Authors@R: c(person(given = c("Conor", "I."), family = "Anderson",
-           role = c("aut","cre"), email = "conor.anderson@mail.utoronto.ca"),
+           role = c("aut","cre"), email = "conor.anderson@utoronto.ca"),
            person(given = c("William", "A."), family = "Gough", role = "ths",
            email = "gough@utsc.utoronto.ca"))
-Maintainer: Conor I. Anderson <conor.anderson@mail.utoronto.ca>
+Maintainer: Conor I. Anderson <conor.anderson@utoronto.ca>
 Description: Collection of functions developed at the University of
     Toronto Climate lab, often stylized as "Climate Lab at University of Toronto,
     CL@UT".
 Depends:
-    R (>= 3.1.0),
-    PCICt
+    R (>= 3.1.0)
 Imports:
+    doParallel,
     dplyr,
+    foreach,
     gdata,
-    magrittr,
-    ncdf4,
-    ncdf4.helpers,
+    iterators,
+    parallel,
     readr,
     stats,
-    storr,
     tibble,
     utils,
     zoo

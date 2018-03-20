@@ -14,11 +14,11 @@ missing_data_lab(monthin, NAs, sampling = "z", no_of_tests = 1,
 
 \item{sampling}{character; the type of sampling to use: (r)andom, (c)onsecutive}
 
+\item{no_of_tests}{integer; the number of tests to run; for consecutive sampling, tops at N - k + 1}
+
 \item{variables}{character; the names of the variables to test (we will try to auto-idenify the column number)}
 
 \item{cores}{numeric; the number of cores to parallize over. Defaults to \code{parallel::detectCores() - 1}}
-
-\item{no_if_tests}{integer; the number of tests to run; for consecutive sampling, tops at N - k + 1}
 }
 \description{
 Eliminate daily values within months of a data set and report the results
