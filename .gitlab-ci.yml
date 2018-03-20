@@ -7,7 +7,7 @@ r-base:
   image: r-base
   script:
     - apt-get update -qq
-    - apt-get install -y --no-install-recommends libcurl4-openssl-dev libnetcdf-dev libssh2-1-dev libssl-dev libudunits2-dev libxml2-dev git
+    - apt-get install -y --no-install-recommends libcurl4-openssl-dev libssh2-1-dev libssl-dev libxml2-dev git
     - Rscript -e 'install.packages(c("devtools", "roxygen2", "testthat"), repos = "https://cloud.r-project.org/")'
     - Rscript -e 'devtools::install_deps()'
     - Rscript -e 'devtools::check()'
