@@ -32,6 +32,7 @@ The following functions were used in studies that are currently under review. If
 
 There are some other helper functions in this package that are here in hopes that they prove useful to someone someday. These are: 
 
+  - [`describe_snaps()`](https://gitlab.com/ConorIA/claut/blob/master/R/describe_snaps.R): Describes the lengths or other characteristics of run-length-encoded events, such as cold snaps or heatwaves.
   - [`trim_data()`](https://gitlab.com/ConorIA/claut/blob/master/R/trimData.R): An easy function to trim a `data.frame` to given start and end years
   - functions for working with ASCII gridded data; these were originally written to parse NOAA's [GHCN Merged gridded data set](https://www.ncdc.noaa.gov/temp-and-precip/ghcn-gridded-products/)
     - [`parse_ASCII_grid()`](https://gitlab.com/ConorIA/claut/blob/master/R/parse_ASCII_grid.R): Reads an ASCII file of gridded data into a 3D matrix. This is currently quite slow and a little noisy, but it works.

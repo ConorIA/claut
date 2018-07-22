@@ -58,6 +58,10 @@ There are some other helper functions in this package that are here in
 hopes that they prove useful to someone someday. These
     are:
 
+  - [`describe_snaps()`](https://gitlab.com/ConorIA/claut/blob/master/R/describe_snaps.R):
+    Describes the lengths or other characteristics of run-length-encoded
+    events, such as cold snaps or
+    heatwaves.
   - [`trim_data()`](https://gitlab.com/ConorIA/claut/blob/master/R/trimData.R):
     An easy function to trim a `data.frame` to given start and end years
   - functions for working with ASCII gridded data; these were originally

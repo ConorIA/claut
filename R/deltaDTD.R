@@ -9,8 +9,9 @@
 ##' @author Conor I. Anderson
 ##'
 ##' @importFrom zoo as.yearmon as.yearqtr
+##' @importFrom rlang .data
 ##' @importFrom stats aggregate sd
-##' @importFrom dplyr mutate group_by group_indices select summarize
+##' @importFrom dplyr %>% mutate group_by group_indices select summarize
 ##'
 ##' @export
 ##'
@@ -33,20 +34,29 @@ deltaDTD <- function(datain, period = "z", max_NA = 0.2) {
   if(period == "daily") return(dat)
 
   # Calculate number of missing values
-  tests <- dat %>% group_by(Yearmon = as.yearmon(Date)) %>% summarize(Missing = (sum(is.na(deltaDTD))/sum(is.na(deltaDTD), !is.na(deltaDTD))))
+  tests <- dat %>% group_by(Yearmon = as.yearmon(.data$Date)) %>%
+    summarize(Missing = (sum(is.na(.data$deltaDTD)) / sum(is.na(.data$deltaDTD), !is.na(.data$deltaDTD))))
   # Take note of those months that are missing more than 20% of the data
   badrows <- which(tests$Missing > max_NA)
 
   if(period == "monthly"){
 
     # Now we stick everything together in a new data frame.
-    dat <- dat %>% group_by(Yearmon = as.yearmon(Date)) %>% summarize(Tmax = mean(MaxTemp, na.rm = TRUE), Tmin = mean(MinTemp, na.rm = TRUE), DTD_Tmax = mean(DTD_Tmax, na.rm = TRUE), DTD_Tmin = mean(DTD_Tmin, na.rm = TRUE), deltaDTD = mean(deltaDTD, na.rm = TRUE), SD_Tmax = sd(MaxTemp, na.rm = TRUE), SD_Tmin = sd(MinTemp, na.rm = TRUE))
+    dat <- dat %>% group_by(Yearmon = as.yearmon(.data$Date)) %>%
+      summarize(Tmax = mean(.data$MaxTemp, na.rm = TRUE),
+                Tmin = mean(.data$MinTemp, na.rm = TRUE),
+                DTD_Tmax = mean(.data$DTD_Tmax, na.rm = TRUE),
+                DTD_Tmin = mean(.data$DTD_Tmin, na.rm = TRUE),
+                deltaDTD = mean(.data$deltaDTD, na.rm = TRUE),
+                SD_Tmax = sd(.data$MaxTemp, na.rm = TRUE),
+                SD_Tmin = sd(.data$MinTemp, na.rm = TRUE))
 
     # Wipe out the months with too much missing data.
-    dat[badrows,2:ncol(dat)] <- NA
+    dat[badrows, 2:ncol(dat)] <- NA
 
     # Calculate G value and deltaDTD
-    dat <- mutate(dat, G_Tmax = DTD_Tmax / SD_Tmax, G_Tmin = DTD_Tmin / SD_Tmin)
+    dat <- mutate(dat, G_Tmax = .data$DTD_Tmax / .data$SD_Tmax,
+                  G_Tmin = .data$DTD_Tmin / .data$SD_Tmin)
 
     ## Stop here for monthly data
     if (period == "monthly") return(dat)
@@ -54,29 +64,40 @@ deltaDTD <- function(datain, period = "z", max_NA = 0.2) {
   } else {
 
     # Wipe out the bad months
-    dat[!is.na(match(dat %>% group_indices(Yearmon = as.yearmon(Date)), badrows)),2:6] <- NA
+    dat[!is.na(match(dat %>% group_indices(Yearmon = as.yearmon(.data$Date)), badrows)),2:6] <- NA
 
-    dat <- mutate(dat, Year = as.integer(format(Date, format = "%Y")), Month = as.integer(format(Date, format = "%m")))
+    dat <- mutate(dat, Year = as.integer(format(.data$Date, format = "%Y")),
+                  Month = as.integer(format(.data$Date, format = "%m")))
     dat$Year[dat$Month == 12] <- dat$Year[dat$Month == 12] + 1
     dat$Season[dat$Month == 1 | dat$Month == 2 | dat$Month == 12] <- 1
     dat$Season[dat$Month == 3 | dat$Month == 4 | dat$Month == 5] <- 2
     dat$Season[dat$Month == 6 | dat$Month == 7 | dat$Month == 8] <- 3
     dat$Season[dat$Month == 9 | dat$Month == 10 | dat$Month == 11] <- 4
 
-    tests <- dat %>% group_by(Yearqtr = as.yearqtr(paste(Year, Season, sep = "-"))) %>% summarize(Total = sum(is.na(deltaDTD), !is.na(deltaDTD)), Missing = (sum(is.na(deltaDTD))/Total))
+    tests <- dat %>% group_by(Yearqtr = as.yearqtr(paste(.data$Year, .data$Season, sep = "-"))) %>%
+      summarize(Total = sum(is.na(.data$deltaDTD), !is.na(.data$deltaDTD)),
+                Missing = (sum(is.na(.data$deltaDTD)) / .data$Total))
     badrows <- c(which(tests$Total < 90), which(tests$Missing > max_NA))
 
     ## Take this route for seasonal data
     if (period == "seasonal") {
 
       # Now we stick everything together in a new data frame.
-      dat <- dat %>% group_by(Yearqtr = as.yearqtr(paste(Year, Season, sep = "-"))) %>% summarize(Tmax = mean(MaxTemp, na.rm = TRUE), Tmin = mean(MinTemp, na.rm = TRUE), DTD_Tmax = mean(DTD_Tmax, na.rm = TRUE), DTD_Tmin = mean(DTD_Tmin, na.rm = TRUE), deltaDTD = mean(deltaDTD, na.rm = TRUE), SD_Tmax = sd(MaxTemp, na.rm = TRUE), SD_Tmin = sd(MinTemp, na.rm = TRUE))
+      dat <- dat %>% group_by(Yearqtr = as.yearqtr(paste(Year, Season, sep = "-"))) %>%
+        summarize(Tmax = mean(.data$MaxTemp, na.rm = TRUE),
+                  Tmin = mean(.data$MinTemp, na.rm = TRUE),
+                  DTD_Tmax = mean(.data$DTD_Tmax, na.rm = TRUE),
+                  DTD_Tmin = mean(.data$DTD_Tmin, na.rm = TRUE),
+                  deltaDTD = mean(.data$deltaDTD, na.rm = TRUE),
+                  SD_Tmax = sd(.data$MaxTemp, na.rm = TRUE),
+                  SD_Tmin = sd(.data$MinTemp, na.rm = TRUE))
 
       # Wipe out the months with too much missing data.
       dat[badrows,2:ncol(dat)] <- NA
 
       # Calculate G value
-      dat <- mutate(dat, G_Tmax = DTD_Tmax / SD_Tmax, G_Tmin = DTD_Tmin / SD_Tmin)
+      dat <- mutate(dat, G_Tmax = .data$DTD_Tmax / .data$SD_Tmax,
+                    G_Tmin = .data$DTD_Tmin / .data$SD_Tmin)
 
       ## Stop here for seasonal data
       return(dat)
@@ -84,21 +105,34 @@ deltaDTD <- function(datain, period = "z", max_NA = 0.2) {
     } else {
 
       # Wipe out the bad quarters FIXME: Is there a way to vectorize this?
-      dat[!is.na(match(dat %>% group_indices(Yearqtr = as.yearqtr(paste(Year, Season, sep = "-"))), badrows)),2:6] <- NA
+      dat[!is.na(match(dat %>%
+                         group_indices(Yearqtr = as.yearqtr(paste(.data$Year,
+                                                                  .data$Season,
+                                                                  sep = "-"))),
+                       badrows)),2:6] <- NA
 
       # Take this route for annual data
 
-      tests <- dat %>% group_by(Year = format(Date, format = "%Y")) %>% summarize(Missing = (sum(is.na(deltaDTD))/sum(is.na(deltaDTD), !is.na(deltaDTD))))
+      tests <- dat %>% group_by(Year = format(.data$Date, format = "%Y")) %>%
+        summarize(Missing = (sum(is.na(.data$deltaDTD)) / sum(is.na(.data$deltaDTD), !is.na(.data$deltaDTD))))
       badrows <- which(tests$Missing > max_NA)
 
       # Now we stick everything together in a new data frame.
-      dat <- dat %>% group_by(Year = format(Date, format = "%Y")) %>% summarize(Tmax = mean(MaxTemp, na.rm = TRUE), Tmin = mean(MinTemp, na.rm = TRUE), DTD_Tmax = mean(DTD_Tmax, na.rm = TRUE), DTD_Tmin = mean(DTD_Tmin, na.rm = TRUE), deltaDTD = mean(deltaDTD, na.rm = TRUE), SD_Tmax = sd(MaxTemp, na.rm = TRUE), SD_Tmin = sd(MinTemp, na.rm = TRUE))
+      dat <- dat %>% group_by(Year = format(.data$Date, format = "%Y")) %>%
+        summarize(Tmax = mean(.data$MaxTemp, na.rm = TRUE),
+                  Tmin = mean(.data$MinTemp, na.rm = TRUE),
+                  DTD_Tmax = mean(.data$DTD_Tmax, na.rm = TRUE),
+                  DTD_Tmin = mean(.data$DTD_Tmin, na.rm = TRUE),
+                  deltaDTD = mean(.data$deltaDTD, na.rm = TRUE),
+                  SD_Tmax = sd(.data$MaxTemp, na.rm = TRUE),
+                  SD_Tmin = sd(.data$MinTemp, na.rm = TRUE))
 
       # Wipe out the months with too much missing data.
       dat[badrows,2:ncol(dat)] <- NA
 
       # Calculate G value and deltaDTD
-      dat <- mutate(dat, G_Tmax = DTD_Tmax / SD_Tmax, G_Tmin = DTD_Tmin / SD_Tmin)
+      dat <- mutate(dat, G_Tmax = .data$DTD_Tmax / .data$SD_Tmax,
+                    G_Tmin = .data$DTD_Tmin / .data$SD_Tmin)
 
       ## Stop here for annual data
       return(dat)

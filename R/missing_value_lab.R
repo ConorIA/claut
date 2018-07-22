@@ -7,11 +7,13 @@
 #' @param variables character; the names of the variables to test (we will try to auto-idenify the column number)
 #' @param cores numeric; the number of cores to parallize over. Defaults to \code{parallel::detectCores() - 1}
 #'
-#' @importFrom dplyr bind_rows
+#' @importFrom dplyr %>% bind_rows left_join summarize_all
 #' @importFrom iterators icount
 #' @importFrom foreach %do% %dopar% foreach
 #' @importFrom doParallel registerDoParallel
 #' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom reshape2 melt
+#' @importFrom rlang .data
 #' @importFrom stats sd
 #' @importFrom utils read.csv
 #' @importFrom zoo na.approx
@@ -59,7 +61,8 @@ missing_data_lab <- function(monthin, NAs, sampling = "z", no_of_tests = 1, vari
   registerDoParallel(cl)
   pb <- txtProgressBar(0, length(NAvectors), style = 3)
 
-  results <- foreach(i = icount(length(NAvectors)), .packages = c("dplyr", "foreach", "tibble", "reshape2", "zoo")) %dopar% {
+  results <- foreach(i = icount(length(NAvectors)),
+                     .packages = c("dplyr", "foreach", "tibble", "reshape2", "rlang", "zoo")) %dopar% {
 
     NAs <- unlist(NAvectors[i])
 
@@ -73,19 +76,19 @@ missing_data_lab <- function(monthin, NAs, sampling = "z", no_of_tests = 1, vari
 
     summary <- month %>%
       melt(id.vars = c("Date", "var"), variable.name = "treatment") %>%
-      group_by(yearmon = as.yearmon(Date, format = "%Y-%m-%d"), var, treatment) %>%
+      group_by(yearmon = as.yearmon(.data$Date, format = "%Y-%m-%d"), var, treatment) %>%
       select(-`Date`) %>%
       summarize_all(c(mean = mean.default, sd = sd), na.rm = TRUE) %>%
       mutate(k = length(NAs), days = list(NAs))
 
     summary <- summary %>%
       left_join(., subset(summary, treatment == "Intact", select = c(-`treatment`, -`k`, -`days`)), by = c("yearmon", "var")) %>%
-      mutate(err = abs(mean.x - mean.y), prop = err / sd.y) %>%
+      mutate(err = abs(.data$mean.x - .data$mean.y), prop = .data$err / .data$sd.y) %>%
       select(yearmon, var, k, days, treatment, mean = mean.x, sd = sd.x, -`mean.y`, -`sd.y`, err, prop)
 
     summary <- summary %>%
       left_join(., subset(summary, treatment == "wMiss", select = c(-`treatment`, -`k`, -`days`)), by = c("yearmon", "var")) %>%
-      mutate(change_real = err.y - err.x, change_prop = prop.y - prop.x) %>%
+      mutate(change_real = .data$err.y - .data$err.x, change_prop = .data$prop.y - .data$prop.x) %>%
       select(yearmon, var, k, days, treatment, mean = mean.x, sd = sd.x, -`mean.y`, -`sd.y`, err = err.x, prop = prop.x, change_real, change_prop)
 
     setTxtProgressBar(pb, i)
