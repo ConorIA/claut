@@ -1,12 +1,13 @@
 Package: claut
 Type: Package
 Title: Functions from the University of Toronto Climate Lab
-Version: 0.1.5
+Version: 0.1.7
 Date: 2018-04-17
-Authors@R: c(person(given = c("Conor", "I."), family = "Anderson",
-           role = c("aut","cre"), email = "conor.anderson@utoronto.ca"),
-           person(given = c("William", "A."), family = "Gough", role = "ths",
-           email = "gough@utsc.utoronto.ca"))
+Authors@R: as.person(c(
+    "Conor I. Anderson <conor.anderson@utoronto.ca> [aut, cre]",
+    "Ana Žaknić-Ćatović <azcatovic@utsc.utoronto.ca> [ctb]",
+    "William A. Gough <gough@utsc.utoronto.ca> [ths]"
+  ))
 Maintainer: Conor I. Anderson <conor.anderson@utoronto.ca>
 Description: Collection of functions developed at the University of
     Toronto Climate lab, often stylized as "Climate Lab at University of Toronto,
@@ -20,6 +21,7 @@ Imports:
     gdata,
     iterators,
     lpSolve,
+    lubridate,
     parallel,
     readr,
     reshape2,
@@ -28,6 +30,9 @@ Imports:
     tibble,
     utils,
     zoo
+Suggests: 
+    Rdpack
+RdMacros: Rdpack
 License: GPL (>= 3)
 URL: https://gitlab.com/ConorIA/claut
 BugReports: https://gitlab.com/ConorIA/claut/issues
