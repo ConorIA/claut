@@ -3,11 +3,6 @@ claut
 
 ## Functions from the University of Toronto Climate Lab
 
-[![build
-status](https://gitlab.com/ConorIA/claut/badges/master/build.svg)](https://gitlab.com/ConorIA/claut/commits/master)
-[![Build
-status](https://ci.appveyor.com/api/projects/status/kioqnwa6xqs1f4j5?svg=true)](https://ci.appveyor.com/project/ConorIA/claut)
-
 This package, currently at a very early stage of development, will
 eventually host many of the functions generated at the University of
 Toronto Climate Lab. For now, I (Conor Anderson) am the sole maintainer
@@ -110,7 +105,7 @@ that code you contribute will be attributed to you, and will be released
 under the terms of the [GNU
 GPLv3](https://gitlab.com/ConorIA/claut/blob/master/LICENSE.md). <br>
 
-#### References
+## References
 
 <div id="refs" class="references">
 
